@@ -53,6 +53,7 @@ class Trainer:
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         write_config_file(self.args)
+        print("Experiment dir and settings file created")
 
     def set_ready(self):
         self.preprocessing_func, self.network_constractor = get_network_functions(self.args.network, self.args.cls_num, self.args.input_size)
@@ -62,12 +63,15 @@ class Trainer:
                                                              (self.args.input_size, self.args.input_size),
                                                              self.args.split_val, self.args.cls_num, shuffle=True,
                                                              preprocess_func=self.preprocessing_func)
+        print("Network and dataloaders were created")
 
     def write_train_data(self):
         self.ref_loader.write_data(self.args.output_path, self.args.ref_filename)
         self.tar_train_loader.write_data(self.args.output_path, self.args.tar_train_filename)
         self.tar_test_loader.write_data(self.args.output_path, self.args.tar_test_filename)
         self.alien_test_loader.write_data(self.args.output_path, self.args.alien_filename)
+        print("Data files created")
+
 
     def train(self):
         return train(self.tar_train_loader, self.ref_loader, self.args.epochs, self.args.first_unfreeze_layer,

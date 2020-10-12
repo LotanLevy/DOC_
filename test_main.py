@@ -21,7 +21,7 @@ EXPERIMENT2DIR = {"all_stab_model": "C:\\Users\\lotan\\Documents\\studies\\Affor
                   "untrainbed_model_with_knives_data": "C:\\Users\\lotan\\Documents\\studies\\Affordances\\experiments\\untrained_with_knives_data"}
 
 
-OUTPUT_PATH =  os.path.join(OUTPUT_MAIN_DIR, NAME)
+OUTPUT_PATH = os.path.join(OUTPUT_MAIN_DIR, NAME)
 
 if not os.path.exists(OUTPUT_PATH):
   os.makedirs(OUTPUT_PATH)
