@@ -13,7 +13,7 @@ def get_args():
     return parser.parse_args()
 
 
-to_aug_name_regex = ".*\\\((.(?!\\\))*)$"
+to_aug_name_regex = ".*[\\\|/]((.(?![\\\|/]))*)$"
 
 if __name__=="__main__":
     args = get_args()
