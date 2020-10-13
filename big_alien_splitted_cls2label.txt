@@ -1,0 +1,38 @@
+cup&0
+pot&0
+fork&0
+cable&0
+chair&0
+plate&0
+spoon&0
+basket&0
+bow tie&0
+glasses&0
+eyeliner&0
+paper box&0
+basketball&0
+chopsticks&0
+drumsticks&0
+garden pot&0
+table lamp&0
+birtday hat&0
+sharp heels&0
+toilet paper&0
+icecream cone&0
+sharp screw&1
+letter opener&1
+syringe needle&1
+swordfish&1
+unicorn&1
+pencil&1
+scissors&1
+iron nail&1
+toothpick&1
+tent_stake&1
+closed_umbrella&1
+sword&1
+spear&1
+screwdriver&1
+knife&1
+garden_sickle&1
+dagger&1
