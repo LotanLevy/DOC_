@@ -12,6 +12,8 @@ def get_train_parser():
     parser.add_argument('--ref_dir', type=str, required=True)
     parser.add_argument('--tar_dir', type=str, required=True)
     parser.add_argument('--alien_dir', type=str, required=True)
+    parser.add_argument('--alien_cls2label', type=str, default=None)
+
 
     parser.add_argument('--output_path', type=str, required=True)
     parser.add_argument('--input_size', type=int, default=224)
@@ -19,6 +21,9 @@ def get_train_parser():
     parser.add_argument('--batchsize', '-bs', type=int, default=2)
     parser.add_argument('--epochs', type=int, default=5)
     parser.add_argument('--cls_num', type=int, default=1000)
+
+
+    parser.add_argument('--c_loss_type', type=str, default="l2", choices=["l1", "l2"])
 
     parser.add_argument('--split_val', type=float, default=0.2)
     parser.add_argument('--lambda_', type=float, default=1)

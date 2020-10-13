@@ -11,19 +11,28 @@ import numpy as np
 
 
 # Loss function
-def get_compactness_loss(lambda_, n_dim):
-    def compactness_loss(y_true, y_pred):
-        # n_dim = np.shape(y_pred)[0]  # number of features vecs
-        k_dim = np.shape(y_pred)[1]  # feature vec dim
-        lc = 1 / (k_dim * n_dim) * n_dim ** 2 * K.sum((y_pred - K.mean(y_pred, axis=0)) ** 2, axis=[1]) / (
-                    (n_dim - 1) ** 2)
-        return lc * lambda_
+def get_compactness_loss(type, lambda_, n_dim):
+    if type == "l2":
+        def compactness_loss2(y_true, y_pred):
+            # n_dim = np.shape(y_pred)[0]  # number of features vecs
+            k_dim = np.shape(y_pred)[1]  # feature vec dim
+            lc = 1 / (k_dim * n_dim) * n_dim ** 2 * K.sum((y_pred - K.mean(y_pred, axis=0)) ** 2, axis=[1]) / (
+                        (n_dim - 1) ** 2)
+            return lc * lambda_
+        return compactness_loss2
+    if type == "l1":
+        def compactness_loss1(y_true, y_pred):
+            # n_dim = np.shape(y_pred)[0]  # number of features vecs
+            k_dim = np.shape(y_pred)[1]  # feature vec dim
+            lc = 1 / (k_dim * n_dim) * n_dim * K.sum((y_pred - K.mean(y_pred, axis=0)) , axis=[1]) / (
+                        (n_dim - 1))
+            return lc * lambda_
+        return compactness_loss1
 
-    return compactness_loss
 
 
 # Learning
-def train(target_dataloader, reference_dataloader, epoch_num, first_trained_layer_name, lambda_, output_dir,
+def train(target_dataloader, reference_dataloader, epoch_num, first_trained_layer_name, compactness_loss, output_dir,
           network_constractor, batchsize, target_layer_name):
     # output dirs !
     time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -47,7 +56,7 @@ def train(target_dataloader, reference_dataloader, epoch_num, first_trained_laye
     train_accuracy = tf.keras.metrics.CategoricalAccuracy()
     optimizer = SGD(lr=5e-5, decay=0.00005)
     model_r.compile(optimizer=optimizer, loss="categorical_crossentropy", metrics=[train_accuracy])
-    model_t.compile(optimizer=optimizer, loss=get_compactness_loss(lambda_, batchsize))
+    model_t.compile(optimizer=optimizer, loss=compactness_loss)
 
     # Prints run settings
     model_t.summary()

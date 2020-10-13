@@ -4,8 +4,8 @@ from tensorflow.keras.models import Model
 from dataloader import construct_with_files
 from utils.config_utils import write_config_file, read_config_file
 from utils.network_utils import get_network_functions
-from dataloader import get_doc_loaders
-from train import train
+from dataloader import get_doc_loaders, parse_cls2label_map
+from train import train, get_compactness_loss
 from train_main import get_train_parser
 
 
@@ -55,14 +55,18 @@ class Trainer:
         write_config_file(self.args)
         print("Experiment dir and settings file created")
 
+
     def set_ready(self):
         self.preprocessing_func, self.network_constractor = get_network_functions(self.args.network, self.args.cls_num, self.args.input_size)
+        alien_cls2label = None if self.args.alien_cls2label is None else parse_cls2label_map(self.args.alien_cls2label)
         self.tar_train_loader, self.ref_loader, \
         self.tar_test_loader, self.alien_test_loader = get_doc_loaders(self.args.ref_dir, self.args.tar_dir,
                                                              self.args.alien_dir, self.args.batchsize,
                                                              (self.args.input_size, self.args.input_size),
                                                              self.args.split_val, self.args.cls_num, shuffle=True,
-                                                             preprocess_func=self.preprocessing_func)
+                                                             preprocess_func=self.preprocessing_func,
+                                                                       alien_cls2label=alien_cls2label)
+        self.compactness_loss = get_compactness_loss(self.args.c_loss_type, self.args.lambda_,self.args.batchsize)
         print("Network and dataloaders were created")
 
     def write_train_data(self):
@@ -75,7 +79,7 @@ class Trainer:
 
     def train(self):
         return train(self.tar_train_loader, self.ref_loader, self.args.epochs, self.args.first_unfreeze_layer,
-                     self.args.lambda_, self.args.output_path,
+                     self.compactness_loss, self.args.output_path,
                      self.network_constractor, self.args.batchsize, self.args.target_layer)
 
     @staticmethod

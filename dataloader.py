@@ -4,6 +4,7 @@ from PIL import Image
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 import re
+import json
 
 
 def read_paths_file(path_to_paths_file):
@@ -114,9 +115,16 @@ Data loader that loads data from a dir of sub dirs, each sub dir contains data o
 Works similarly to directory iterator, but it loads the data from a path only when a batch called (next and get_all_data)
 """
 
+def convert_subdir2cls(subdir_name):
+    if re.match("0*$", subdir_name):
+        return "0"
+    reg = "[0]*((.(?![0])).*)$"
+    m = re.match(reg, subdir_name)
+    return m.group(1)
+
 
 def get_iterators_by_root_dir(root_dir, batch_size, input_size, split_val, classes_num, shuffle=False,
-                              preprocess_func=lambda x: x):
+                              preprocess_func=lambda x: x, cls2label=None):
     dirs = os.listdir(root_dir)
     length = len(max(dirs, key=len))
 
@@ -128,20 +136,22 @@ def get_iterators_by_root_dir(root_dir, batch_size, input_size, split_val, class
             os.rename(os.path.join(root_dir, dir), os.path.join(root_dir, new_name))
             print("old {}, new {}".format(dir, new_name))
 
+    if cls2label is None:
+        cls2label = dict()
+        label_idx = 0
+        for sub_dir in sorted(os.listdir(root_dir)):
+            cls2label[convert_subdir2cls(sub_dir)] = label_idx
+            label_idx += 1
+
     paths = []
     labels = []
-    cls2label = dict()
-    label_idx = 0
     for sub_dir in sorted(os.listdir(root_dir)):
-
         full_path = os.path.join(root_dir, sub_dir)
         if not os.path.isdir(full_path):
             continue
-        cls2label[sub_dir] = label_idx
         for file in os.listdir(full_path):
             paths.append(os.path.join(full_path, file))
-            labels.append(label_idx)
-        label_idx += 1
+            labels.append(cls2label[convert_subdir2cls(sub_dir)])
 
     print(cls2label)
 
@@ -165,15 +175,26 @@ def get_iterators_by_root_dir(root_dir, batch_size, input_size, split_val, class
 
 
 def get_doc_loaders(ref_path, tar_path, alien_path, batchsize, input_size, split_val, cls_num, shuffle=False,
-                    preprocess_func=lambda x: x):
+                    preprocess_func=lambda x: x, alien_cls2label=None):
     ref_loader, i1 = get_iterators_by_root_dir(ref_path, batchsize, input_size, 0, cls_num, shuffle=shuffle,
                                                preprocess_func=preprocess_func)
     train_s_loader, test_s_loader = get_iterators_by_root_dir(tar_path, batchsize, input_size, split_val, cls_num,
                                                               shuffle=shuffle, preprocess_func=preprocess_func)
     test_alien_loader, i2 = get_iterators_by_root_dir(alien_path, batchsize, input_size, 0, cls_num, shuffle=shuffle,
-                                                      preprocess_func=preprocess_func)
+                                                      preprocess_func=preprocess_func, cls2label=alien_cls2label)
     print(len(ref_loader), len(i1))
     print(len(train_s_loader), len(test_s_loader))
     print(len(test_alien_loader), len(i2))
 
     return train_s_loader, ref_loader, test_s_loader, test_alien_loader
+
+
+
+def parse_cls2label_map(path):
+    cls2label = dict()
+    with open(path, 'rt') as f:
+        lines = f.readlines()
+        for line in lines:
+            args = line.strip().split("&")
+            cls2label[args[0]] = int(args[1])
+    return cls2label
