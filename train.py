@@ -24,7 +24,7 @@ def get_compactness_loss(type, lambda_, n_dim):
         def compactness_loss1(y_true, y_pred):
             # n_dim = np.shape(y_pred)[0]  # number of features vecs
             k_dim = np.shape(y_pred)[1]  # feature vec dim
-            lc = 1 / (k_dim * n_dim) * n_dim * K.sum((y_pred - K.mean(y_pred, axis=0)) , axis=[1]) / (
+            lc = 1 / (k_dim * n_dim) * n_dim * K.sum(np.abs(y_pred - K.mean(y_pred, axis=0)) , axis=[1]) / (
                         (n_dim - 1))
             return lc * lambda_
         return compactness_loss1
