@@ -19,6 +19,7 @@ def get_compactness_loss(type, lambda_, n_dim):
             lc = 1 / (k_dim * n_dim) * n_dim ** 2 * K.sum((y_pred - K.mean(y_pred, axis=0)) ** 2, axis=[1]) / (
                         (n_dim - 1) ** 2)
             return lc * lambda_
+        print("l2 compactness loss initialized")
         return compactness_loss2
     if type == "l1":
         def compactness_loss1(y_true, y_pred):
@@ -27,6 +28,7 @@ def get_compactness_loss(type, lambda_, n_dim):
             lc = 1 / (k_dim * n_dim) * n_dim * K.sum(K.abs(y_pred - K.mean(y_pred, axis=0)) , axis=[1]) / (
                         (n_dim - 1))
             return lc * lambda_
+        print("l1 compactness loss initialized")
         return compactness_loss1
 
 
