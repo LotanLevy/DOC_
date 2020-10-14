@@ -7,7 +7,7 @@ import datetime
 from utils import experiment_utils
 
 def get_train_parser():
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='Process train args.')
 
     parser.add_argument('--ref_dir', type=str, required=True)
     parser.add_argument('--tar_dir', type=str, required=True)

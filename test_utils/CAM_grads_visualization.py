@@ -8,7 +8,6 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
-from test_utils.ROC_graph import get_data_scores
 import os
 
 
@@ -104,7 +103,7 @@ def get_gradCam_image(experiments, image, image_path, output_path, loss_norm_dic
       model = experiment.model
       cam = GradCAM(model, experiment.templates)
 
-      loss = get_data_scores(model, experiment.templates, image)
+      loss = experiment.get_data_scores(model, experiment.templates, image)
       losses_dict[name] = np.float(loss)
 
       heatmap, loss = cam.compute_heatmap(np.copy(image))

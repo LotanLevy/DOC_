@@ -78,10 +78,26 @@ class DirIter:
             labels = None
         return self.preprocess_func(images), labels
 
-    def get_all_data(self, size=None):
+    def get_all_data(self, size=None, shuffle=False):
         if size is None:
             size = len(self.paths)
+        if shuffle:
+            np.random.shuffle(self.indices)
         relevant_paths = [self.paths[i] for i in self.indices[:size]]
+        if shuffle:
+            np.sort(self.indices)
+        images = np.concatenate([self.load_img(path) for path in relevant_paths])
+        return self.preprocess_func(images), relevant_paths
+
+    def get_all_data_by_label(self, label, size=None, shuffle=False):
+        relevant_indices = np.where(self.labels == label)[0]
+        if size is None:
+            size = len(self.paths)
+        if shuffle:
+            np.random.shuffle(relevant_indices)
+        relevant_paths = [self.paths[i] for i in relevant_indices[:size]]
+        if shuffle:
+            np.sort(self.indices)
         images = np.concatenate([self.load_img(path) for path in relevant_paths])
         return self.preprocess_func(images), relevant_paths
 

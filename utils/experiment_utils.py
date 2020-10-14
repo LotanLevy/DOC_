@@ -7,23 +7,31 @@ from utils.network_utils import get_network_functions
 from dataloader import get_doc_loaders, parse_cls2label_map
 from train import train, get_compactness_loss
 from train_main import get_train_parser
+import numpy as np
+from test_utils.ROC_graph import get_scores_function
+
 
 
 
 
 class Experiment:
-    def __init__(self, experiment_name, experiment_dir, weights_of_epoch,
+    def __init__(self, experiment_dir, weights_of_epoch,
                  templates_num=40, target_num=70, alien_num=70):
-        self.trainer = Trainer.build_trainer(os.path.join(experiment_dir, "train_settings.json"), get_train_parser)
+        self.trainer = Trainer.build_trainer(os.path.join(experiment_dir, "train_settings.json"), get_train_parser())
         self.trainer.set_ready()
-        self.experiment_name = experiment_name
+        self.experiment_name = self.trainer.args.name
         self.experiment_dir = experiment_dir
         self.features_layer = self.trainer.args.target_layer
         self.model = self.build_model(experiment_dir, self.trainer.network_constractor, weights_of_epoch)
+        self.get_data_scores = get_scores_function(self.trainer.args.c_loss_type)
+        np.random.seed(12345)
 
         self.templates, self.templates_paths = self.get_data_from_files(self.trainer.args.tar_train_filename, templates_num)
         self.target, self.target_paths = self.get_data_from_files(self.trainer.args.tar_test_filename, target_num)
-        self.aliens, self.aliens_paths = self.get_data_from_files(self.trainer.args.alien_filename, alien_num)
+        self.aliens, self.aliens_paths = self.get_data_from_files(self.trainer.args.alien_filename, alien_num, shuffle=True)
+
+        self.aliens_positive, self.aliens_negative = self.split_positive_negative_aliens(self.trainer.args.alien_filename, alien_num, shuffle=True)
+
 
 
     def build_model(self, experiment_dir, network_constractor, epoch_num):
@@ -31,15 +39,27 @@ class Experiment:
         ckpt_path = os.path.join(experiment_dir, "ckpts")
         if os.path.exists(ckpt_path):
             model.load_weights(os.path.join(ckpt_path, "weights_after_{}_epochs".format(epoch_num))).expect_partial()
-        print(self.experiment_name + "'s ckpts loaded")
-        return Model(inputs=model.input, outputs=model.layers.get_layer(self.features_layer).output)
+            print(self.experiment_name + "'s ckpts loaded")
+        else:
+            print(self.experiment_name + " has not the required weights, loads imagenet weights only, instead")
+        return Model(inputs=model.input, outputs=model.get_layer(self.features_layer).output)
 
-    def get_data_from_files(self, filename, data_num):
+    def get_data_from_files(self, filename, data_num, shuffle=False):
         paths, labels = os.path.join(self.experiment_dir, filename + "_paths.txt"), os.path.join(self.experiment_dir, filename + "_labels.txt")
         dataloader = construct_with_files(paths, labels, self.trainer.args.batchsize,
                                           (self.trainer.args.input_size, self.trainer.args.input_size),
                                           self.trainer.args.cls_num, False, self.trainer.preprocessing_func)
-        return dataloader.get_all_data(size=data_num)
+        return dataloader.get_all_data(size=data_num, shuffle=shuffle)
+
+    def split_positive_negative_aliens(self, filename, data_num, shuffle=False):
+        paths, labels = os.path.join(self.experiment_dir, filename + "_paths.txt"), os.path.join(self.experiment_dir,
+                                                                                                 filename + "_labels.txt")
+        dataloader = construct_with_files(paths, labels, self.trainer.args.batchsize,
+                                          (self.trainer.args.input_size, self.trainer.args.input_size),
+                                          self.trainer.args.cls_num, False, self.trainer.preprocessing_func)
+        positive, _ = dataloader.get_all_data_by_label(1, size=data_num, shuffle=shuffle)
+        negative, _ = dataloader.get_all_data_by_label(0, size=data_num, shuffle=shuffle)
+        return positive, negative
 
 
 
