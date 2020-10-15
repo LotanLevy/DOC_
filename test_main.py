@@ -53,6 +53,8 @@ def run_test(args):
         Z2 = new_experiment.get_data_scores(new_experiment.model, new_experiment.templates, new_experiment.aliens)
         norm_factors[new_experiment.experiment_name] = max(np.max(Z1), np.max(Z2))
 
+    print(norm_factors)
+
     # target2alien roc curve
     if args.target2alien_roc:
         for model_name, experiment in experiments.items():
@@ -68,6 +70,8 @@ def run_test(args):
     if args.scores_graph:
         # Creates scores graphs
         for name, experiment in experiments.items():
+            Z1 = experiment.get_data_scores(experiment.model, experiment.templates, experiment.target)
+            Z2 = experiment.get_data_scores(experiment.model, experiment.templates, experiment.aliens)
             scores_graph_output_path = get_epoch_dir(name, args.epochs_weights_num)
             create_images_graph(scores_graph_output_path, experiment.target_paths[:40], Z1[:40],
                                 "scores_for_target_images_for_"+name,  0.08, 20)  # displays the first 40's examples
