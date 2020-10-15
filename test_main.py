@@ -39,7 +39,6 @@ def run_test(args):
 
     # creates_relevant_models
     experiments = dict()
-    norm_factors = dict()
     get_epoch_dir = lambda model_name, epoch: os.path.join(os.path.join(output_path, model_name), "epoch_{}".format(epoch))
 
     for model_path in args.models_dirs:
@@ -49,11 +48,6 @@ def run_test(args):
         model_and_epoch_path = get_epoch_dir(new_experiment.experiment_name, args.epochs_weights_num)
         if not os.path.exists(model_and_epoch_path):
             os.makedirs(model_and_epoch_path)
-        Z1 = new_experiment.get_data_scores(new_experiment.model, new_experiment.templates, new_experiment.target)
-        Z2 = new_experiment.get_data_scores(new_experiment.model, new_experiment.templates, new_experiment.aliens)
-        norm_factors[new_experiment.experiment_name] = max(np.max(Z1), np.max(Z2))
-
-    print(norm_factors)
 
     # target2alien roc curve
     if args.target2alien_roc:
@@ -84,11 +78,17 @@ def run_test(args):
                                 "the_smallest_scores_for_alien_images_for_"+name, 0.05, 20, 20)  # the 20's examples with the lowest score
 
     if args.cam_grads_images:
+
+
         grad_cam_output_path = os.path.join(os.path.join(output_path, "grad_cam"), "epoch_" + str(args.epochs_weights_num))
         if not os.path.exists(grad_cam_output_path):
             os.makedirs(grad_cam_output_path)
         to_visualize_images = list(experiments.values())[0].aliens
         to_visualize_paths = list(experiments.values())[0].aliens_paths
+        norm_factors = dict()
+        for name, experiment in experiments.items():
+            Z2 = experiment.get_data_scores(experiment.model, experiment.templates, to_visualize_images)
+            norm_factors[experiment.experiment_name] = np.max(Z2)
         get_results_for_imagesdir(experiments, to_visualize_images, to_visualize_paths,
                                            grad_cam_output_path,
                                            norm_factors)
