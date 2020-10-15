@@ -9,14 +9,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 import os
+from test_utils.ROC_graph import get_distance_func
 
 
 class GradCAM:
-    def __init__(self, model, templates):
+    def __init__(self, distance_func, model, templates):
 
         self.model = Model(inputs=model.input, outputs=model.layers[-1].output)
         self.templates = templates
         self.layerName = self.find_target_layer()
+        self.distance_func = distance_func
 
     def find_target_layer(self):
 
@@ -45,7 +47,7 @@ class GradCAM:
             (t_convOutputs, t_predictions) = gradModel(self.templates)
             train = tf.reshape(t_predictions, (len(self.templates), -1))
             test = tf.reshape(predictions, (len(image), -1))
-            losses = tf.keras.losses.mean_squared_error(train, test)
+            losses = self.distance_func(train, test)
 
             loss = tf.math.reduce_min(losses)
 
@@ -101,7 +103,7 @@ def get_gradCam_image(experiments, image, image_path, output_path, loss_norm_dic
 
     for name, experiment in experiments.items():
       model = experiment.model
-      cam = GradCAM(model, experiment.templates)
+      cam = GradCAM(experiment.distance_func, model, experiment.templates)
 
       loss_ = experiment.get_data_scores(model, experiment.templates, image)
       losses_dict[name] = np.float(loss_)

@@ -5,12 +5,17 @@ import tensorflow as tf
 import os
 
 
-def get_scores_function(c_loss_type):
+def get_distance_func(c_loss_type):
     c_loss_func = None
     if c_loss_type == "l2":
         c_loss_func = tf.keras.losses.mean_squared_error
     elif c_loss_type == "l1":
         c_loss_func = tf.keras.losses.mean_absolute_error
+    return c_loss_func
+
+
+def get_scores_function(c_loss_type):
+    c_loss_func = get_distance_func(c_loss_type)
 
     if c_loss_func is not None:
         def get_data_scores(model, tempates, data_batch):

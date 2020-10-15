@@ -8,7 +8,7 @@ from dataloader import get_doc_loaders, parse_cls2label_map
 from train import train, get_compactness_loss
 from train_main import get_train_parser
 import numpy as np
-from test_utils.ROC_graph import get_scores_function
+from test_utils.ROC_graph import get_scores_function, get_distance_func
 
 
 
@@ -24,6 +24,7 @@ class Experiment:
         self.features_layer = self.trainer.args.target_layer
         self.model = self.build_model(experiment_dir, self.trainer.network_constractor, weights_of_epoch)
         self.get_data_scores = get_scores_function(self.trainer.args.c_loss_type)
+        self.distance_func = get_scores_function(self.trainer.args.c_loss_type)
         np.random.seed(12345)
 
         self.templates, self.templates_paths = self.get_data_from_files(self.trainer.args.tar_train_filename, templates_num)
