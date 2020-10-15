@@ -3,15 +3,33 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import os
+from tensorflow.keras.losses import Loss
+import re
+
+class MeanPError(Loss):
+
+    def __init__(self, power):
+        Loss.__init__(self)
+        self.power = power
+
+    def call(self, y_true, y_pred):
+        y_pred = tf.convert_to_tensor(y_pred)
+        y_true = tf.cast(y_true, y_pred.dtype)
+        return tf.reduce_mean(tf.math.pow(y_pred - y_true, self.power), axis=-1)
 
 
 def get_distance_func(c_loss_type):
-    c_loss_func = None
-    if c_loss_type == "l2":
-        c_loss_func = tf.keras.losses.mean_squared_error
-    elif c_loss_type == "l1":
-        c_loss_func = tf.keras.losses.mean_absolute_error
-    return c_loss_func
+    m = re.match("l(.*)", c_loss_type)
+    if m is not None:
+        return MeanPError(str(m.group(1)))
+    # return m.group(1)
+    # c_loss_func = None
+    # if c_loss_type == "l2":
+    #     # return MeanPError(2)
+    #     c_loss_func = tf.keras.losses.mean_squared_error
+    # elif c_loss_type == "l1":
+    #     c_loss_func = tf.keras.losses.mean_absolute_error
+    # return c_loss_func
 
 
 def get_scores_function(c_loss_type):
