@@ -53,7 +53,7 @@ class Augmentor:
                 os.makedirs(cls_path)
             for aug_name in self.relevant_augs:
                 aug_image = np.uint8(self.aug_image(image, self.relevant_augs[aug_name]))
-                Image.fromarray(aug_image).save(os.path.join(cls_path, name + "_" + aug_name+".jpg"))
+                Image.fromarray(aug_image).save(os.path.join(cls_path, name.replace(" " , "_") + "_" + aug_name+".jpg"))
 
 
 
