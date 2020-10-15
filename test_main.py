@@ -89,6 +89,7 @@ def run_test(args):
         for name, experiment in experiments.items():
             Z2 = experiment.get_data_scores(experiment.model, experiment.templates, to_visualize_images)
             norm_factors[experiment.experiment_name] = np.max(Z2)
+        print(norm_factors)
         get_results_for_imagesdir(experiments, to_visualize_images, to_visualize_paths,
                                            grad_cam_output_path,
                                            norm_factors)

@@ -103,10 +103,11 @@ def get_gradCam_image(experiments, image, image_path, output_path, loss_norm_dic
       model = experiment.model
       cam = GradCAM(model, experiment.templates)
 
-      loss = experiment.get_data_scores(model, experiment.templates, image)
-      losses_dict[name] = np.float(loss)
+      loss_ = experiment.get_data_scores(model, experiment.templates, image)
+      losses_dict[name] = np.float(loss_)
 
       heatmap, loss = cam.compute_heatmap(np.copy(image))
+      print(loss, loss_)
 
       heatmap = cv2.resize(heatmap, (orig.shape[1], orig.shape[0]))
       (heatmap, output) = cam.overlay_heatmap(heatmap, orig, alpha=0.5)
