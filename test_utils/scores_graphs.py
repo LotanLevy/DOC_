@@ -9,7 +9,7 @@ import os
 def map_path_to_class(paths):
     paths2cls = dict()
     for path in paths:
-        cls = path.split('/')[-2]
+        cls = path.split('\\')[-2]
         paths2cls[path] = cls
     return paths2cls
 
