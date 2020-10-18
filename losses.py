@@ -52,7 +52,7 @@ class LossHelper:
     def __init__(self, compact_loss_type, loss_weight, regularization):
         m = re.match("l(.*)", compact_loss_type)
         if m is not None:
-            self.p = int(m.group(1))
+            self.p = float(m.group(1))
         else:
             print("The given compact loss doesn't support")
         self.distance_func = MeanPError(self.p)
