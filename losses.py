@@ -69,7 +69,7 @@ class LossHelper:
             # lc = 1 / (k_dim * n_dim) * n_dim ** self.p * K.sum(K.abs((y_pred - K.mean(y_pred, axis=0))) ** self.p, axis=[1]) / (
             #             (n_dim - 1) ** self.p)
             return lc * self.compact_loss_weight
-        print("l2 compactness loss initialized")
+        print("l{} compactness loss initialized".format(self.p))
         return compactness_loss
 
     def get_scores_function(self):

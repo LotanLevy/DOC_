@@ -23,7 +23,7 @@ def get_train_parser():
     parser.add_argument('--cls_num', type=int, default=1000)
 
 
-    parser.add_argument('--c_loss_type', type=str, default="l2", choices=["l1", "l2"])
+    parser.add_argument('--c_loss_type', type=str, default="l2")
 
     parser.add_argument('--split_val', type=float, default=0.2)
     parser.add_argument('--lambda_', type=float, default=1)
