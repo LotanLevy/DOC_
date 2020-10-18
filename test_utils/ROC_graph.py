@@ -33,10 +33,9 @@ def get_distance_func(c_loss_type):
     # return c_loss_func
 
 
-def get_scores_function(c_loss_type):
-    c_loss_func = get_distance_func(c_loss_type)
+def get_scores_function(distance_func):
 
-    if c_loss_func is not None:
+    if distance_func is not None:
         def get_data_scores(model, tempates, data_batch):
             templates_preds = model.predict(tempates)
             test_preds = model.predict(data_batch)
@@ -44,7 +43,7 @@ def get_scores_function(c_loss_type):
             test_preds = test_preds.reshape((len(data_batch), -1))
             test_s_losses = np.zeros(len(test_preds))
             for i in range(len(test_preds)):
-                losses = c_loss_func(templates_preds, tf.expand_dims(test_preds[i], axis=0))
+                losses = distance_func(templates_preds, tf.expand_dims(test_preds[i], axis=0))
                 test_s_losses[i] = np.array(tf.math.reduce_min(losses))
             return test_s_losses
         return get_data_scores

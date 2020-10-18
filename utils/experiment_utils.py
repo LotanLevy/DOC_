@@ -9,6 +9,7 @@ from train import train, get_compactness_loss
 from train_main import get_train_parser
 import numpy as np
 from test_utils.ROC_graph import get_scores_function, get_distance_func
+from losses import LossHelper
 
 
 
@@ -23,8 +24,10 @@ class Experiment:
         self.experiment_dir = experiment_dir
         self.features_layer = self.trainer.args.target_layer
         self.model = self.build_model(experiment_dir, self.trainer.network_constractor, weights_of_epoch)
-        self.get_data_scores = get_scores_function(self.trainer.args.c_loss_type)
-        self.distance_func = get_distance_func(self.trainer.args.c_loss_type)
+        # self.distance_func = get_distance_func(self.trainer.args.c_loss_type)
+        # self.get_data_scores = get_scores_function(self.distance_func)
+        self.distance_func = self.trainer.loss_helper.distance_func
+        self.get_data_scores = self.trainer.loss_helper.get_scores_function()
         np.random.seed(12345)
 
         self.templates, self.templates_paths = self.get_data_from_files(self.trainer.args.tar_train_filename, templates_num)
@@ -87,7 +90,8 @@ class Trainer:
                                                              self.args.split_val, self.args.cls_num, shuffle=True,
                                                              preprocess_func=self.preprocessing_func,
                                                                        alien_cls2label=alien_cls2label)
-        self.compactness_loss = get_compactness_loss(self.args.c_loss_type, self.args.lambda_,self.args.batchsize)
+        # self.compactness_loss = get_compactness_loss(self.args.c_loss_type, self.args.lambda_,self.args.batchsize)
+        self.loss_helper = LossHelper(self.args.c_loss_type, self.args.lambda_, None)
         print("Network and dataloaders were created")
 
     def write_train_data(self):
@@ -99,8 +103,9 @@ class Trainer:
 
 
     def train(self):
+        compactness_loss = self.loss_helper.get_compact_loss(self.args.batchsize)
         return train(self.tar_train_loader, self.ref_loader, self.args.epochs, self.args.first_unfreeze_layer,
-                     self.compactness_loss, self.args.output_path,
+                     compactness_loss, self.args.output_path,
                      self.network_constractor, self.args.batchsize, self.args.target_layer)
 
     @staticmethod
