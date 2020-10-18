@@ -12,10 +12,11 @@ class MeanPError(Loss):
         Loss.__init__(self)
         self.power = power
 
+
     def call(self, y_true, y_pred):
         y_pred = tf.convert_to_tensor(y_pred)
         y_true = tf.cast(y_true, y_pred.dtype)
-        return tf.reduce_mean(tf.math.pow(y_pred - y_true, self.power), axis=-1)
+        return tf.reduce_mean(tf.math.pow(tf.math.abs(y_pred - y_true), self.power), axis=-1)
 
 
 def get_distance_func(c_loss_type):
