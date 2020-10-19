@@ -35,7 +35,7 @@ def get_compactness_loss(type, lambda_, n_dim):
 
 # Learning
 def train(target_dataloader, reference_dataloader, epoch_num, first_trained_layer_name, compactness_loss, output_dir,
-          network_constractor, batchsize, target_layer_name):
+          network_constractor, batchsize, target_layer_name, not_use_d_lose=False):
     # output dirs !
     time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     epochs_log_dir = os.path.join(os.path.join(output_dir, "epochs_logs/" + time))
@@ -90,17 +90,18 @@ def train(target_dataloader, reference_dataloader, epoch_num, first_trained_laye
                         print(e)
                         continue
 
-                batch_ref, batch_y = reference_dataloader.next()
-
                 # target data
                 # Get loss while learning
                 lc.append(model_t.train_on_batch(batch_target, np.zeros((batchsize, 4096))))
 
-                # reference data
-                # Get loss while learning
-                ref_output = model_r.train_on_batch(batch_ref, batch_y)
-                ld.append(ref_output[0])
-                accuracy.append(ref_output[1])
+                if not not_use_d_lose:
+                    batch_ref, batch_y = reference_dataloader.next()
+
+                    # reference data
+                    # Get loss while learning
+                    ref_output = model_r.train_on_batch(batch_ref, batch_y)
+                    ld.append(ref_output[0])
+                    accuracy.append(ref_output[1])
 
         target_dataloader.on_epoch_end()
         reference_dataloader.on_epoch_end()

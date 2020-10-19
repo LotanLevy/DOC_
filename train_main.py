@@ -27,6 +27,7 @@ def get_train_parser():
     parser.add_argument('--use_var_reg', action='store_true')
 
 
+
     parser.add_argument('--c_loss_type', type=str, default="l2")
 
     parser.add_argument('--split_val', type=float, default=0.2)

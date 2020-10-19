@@ -110,7 +110,7 @@ class Trainer:
         compactness_loss = self.loss_helper.get_compact_loss(self.args.batchsize)
         return train(self.tar_train_loader, self.ref_loader, self.args.epochs, self.args.first_unfreeze_layer,
                      compactness_loss, self.args.output_path,
-                     self.network_constractor, self.args.batchsize, self.args.target_layer)
+                     self.network_constractor, self.args.batchsize, self.args.target_layer, self.args.use_var_reg)
 
     @staticmethod
     def build_trainer(config_path, parser):
