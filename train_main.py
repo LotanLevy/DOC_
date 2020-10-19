@@ -24,7 +24,7 @@ def get_train_parser():
     parser.add_argument('--reg_coeff', type=float, default=0.1)
     parser.add_argument('--reg_samples', type=int, default=500)
 
-    parser.add_argument('--use_var_reg', action='store_true')
+    parser.add_argument('--use_var_reg', type=int, default=0, choices=[0,1])
 
 
 
