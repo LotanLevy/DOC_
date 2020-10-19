@@ -75,20 +75,15 @@ class LossHelper:
 
         self.reg_mean = sum_preds/datasize
         dataloader.on_epoch_end()
+        self.reg_var = tf.constant(0.0)
         # calculate variance
         for _ in range(int(datasize/ dataloader.batch_size)):
             batch = dataloader.next()
             preds = model.predict(batch)
-            self.reg_var = self.get_batch_variance(preds)
+            var_for_sample = tf.reduce_mean(tf.math.pow(tf.subtract(preds, self.reg_mean), 2), axis=1)
+            self.reg_var += tf.reduce_sum(var_for_sample)
+        self.reg_var /= datasize
         dataloader.on_epoch_end()
-
-    def get_batch_variance(self, y_pred):
-        if self.reg_mean is None:
-            return 0
-        var_for_sample = tf.reduce_mean(tf.math.pow(tf.subtract(y_pred, self.reg_mean), 2), axis=1)
-        return tf.reduce_mean(var_for_sample)
-
-
 
 
     def get_compact_loss(self, n_dim):# n_dim - number of features vecs
@@ -98,7 +93,8 @@ class LossHelper:
             sigma = K.sum(K.abs((y_pred - K.mean(y_pred, axis=0))) ** self.p, axis=[1])# sum the features space
             lc = beta * sigma
             if self.reg_mean is not None:
-                lc += self.regularization_coeff * K.abs(self.get_batch_variance(y_pred) - self.reg_var)
+                var_for_sample = tf.reduce_mean(tf.math.pow(tf.subtract(y_pred, self.reg_mean), 2), axis=1)
+                lc += self.regularization_coeff * K.abs(tf.reduce_mean(var_for_sample) - self.reg_var)
 
             # lc = 1 / (k_dim * n_dim) * n_dim ** self.p * K.sum(K.abs((y_pred - K.mean(y_pred, axis=0))) ** self.p, axis=[1]) / (
             #             (n_dim - 1) ** self.p)
