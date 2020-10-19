@@ -91,7 +91,11 @@ class Trainer:
                                                              preprocess_func=self.preprocessing_func,
                                                                        alien_cls2label=alien_cls2label)
         # self.compactness_loss = get_compactness_loss(self.args.c_loss_type, self.args.lambda_,self.args.batchsize)
-        self.loss_helper = LossHelper(self.args.c_loss_type, self.args.lambda_, None)
+        self.loss_helper = LossHelper(self.args.c_loss_type, self.args.lambda_, self.args.reg_coeff)
+        if self.args.use_var_reg:
+            network = self.network_constractor()
+            model_t = Model(inputs=network.input, outputs=network.get_layer(self.args.target_layer).output)
+            self.loss_helper.build_regularization(model_t, self.tar_train_loader)
         print("Network and dataloaders were created")
 
     def write_train_data(self):

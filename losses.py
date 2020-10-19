@@ -49,7 +49,7 @@ def get_scores_function(distance_func):
 
 
 class LossHelper:
-    def __init__(self, compact_loss_type, loss_weight, regularization):
+    def __init__(self, compact_loss_type, loss_weight, regularization_coeff):
         m = re.match("l(.*)", compact_loss_type)
         if m is not None:
             self.p = float(m.group(1))
@@ -57,7 +57,39 @@ class LossHelper:
             print("The given compact loss doesn't support")
         self.distance_func = MeanPError(self.p)
         self.compact_loss_weight = loss_weight
-        self.compact_regularization = regularization
+        self.regularization_coeff = regularization_coeff
+        self.reg_mean = None
+
+    def build_regularization(self, model, dataloader, datasize=500):
+        dataloader.on_epoch_end()
+        # calculate mean vec
+        sum_preds = None
+        for _ in range(int(datasize/ dataloader.batch_size)):
+            batch = dataloader.next()
+            preds = model.predict(batch)
+            cur_sum = K.sum(preds, axis=0)
+            if sum_preds is not None:
+                sum_preds += cur_sum
+            else:
+                sum_preds = cur_sum
+
+        self.reg_mean = sum_preds/datasize
+        dataloader.on_epoch_end()
+        # calculate variance
+        for _ in range(int(datasize/ dataloader.batch_size)):
+            batch = dataloader.next()
+            preds = model.predict(batch)
+            self.reg_var = self.get_batch_variance(preds)
+        dataloader.on_epoch_end()
+
+    def get_batch_variance(self, y_pred):
+        if self.reg_mean is None:
+            return 0
+        var_for_sample = tf.reduce_mean(tf.math.pow(tf.subtract(y_pred, self.reg_mean), 2), axis=1)
+        return tf.reduce_mean(var_for_sample)
+
+
+
 
     def get_compact_loss(self, n_dim):# n_dim - number of features vecs
         def compactness_loss(y_true, y_pred):
@@ -65,6 +97,8 @@ class LossHelper:
             beta = (1 / k_dim) * (n_dim / (n_dim - 1)) ** self.p
             sigma = K.sum(K.abs((y_pred - K.mean(y_pred, axis=0))) ** self.p, axis=[1])# sum the features space
             lc = beta * sigma
+            if self.reg_mean is not None:
+                lc += self.regularization_coeff * K.abs(self.get_batch_variance(y_pred) - self.reg_var)
 
             # lc = 1 / (k_dim * n_dim) * n_dim ** self.p * K.sum(K.abs((y_pred - K.mean(y_pred, axis=0))) ** self.p, axis=[1]) / (
             #             (n_dim - 1) ** self.p)
