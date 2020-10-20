@@ -89,8 +89,8 @@ class LossHelper:
     def get_compact_loss(self, n_dim):# n_dim - number of features vecs
         def compactness_loss(y_true, y_pred):
             k_dim = np.shape(y_pred)[1]  # feature vec dim
-            beta = (1 / k_dim) * (n_dim / (n_dim - 1)) ** self.p
-            sigma = K.sum(K.abs((y_pred - K.mean(y_pred, axis=0))) ** self.p, axis=[1])# sum the features space
+            beta = (1 / k_dim) * (n_dim / (n_dim - 1)) ** 2
+            sigma = K.sum(K.abs((y_pred - K.mean(y_pred, axis=0))) ** 2, axis=[1])# sum the features space
             lc = beta * sigma
             if self.reg_mean is not None:
                 var_for_sample = tf.reduce_mean(tf.math.pow(tf.subtract(y_pred, self.reg_mean), 2), axis=1)
