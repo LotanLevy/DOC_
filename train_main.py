@@ -13,6 +13,8 @@ def get_train_parser():
     parser.add_argument('--tar_dir', type=str, required=True)
     parser.add_argument('--alien_dir', type=str, required=True)
     parser.add_argument('--alien_cls2label', type=str, default=None)
+    parser.add_argument('--use_aug', action="store_true")
+
 
 
     parser.add_argument('--output_path', type=str, required=True)
@@ -48,6 +50,6 @@ if __name__ == "__main__":
     trainer = experiment_utils.Trainer(get_train_parser().parse_args())
     trainer.create_experiment_dir()
     trainer.set_ready()
-    trainer.write_train_data()
+    # trainer.write_train_data()
     trainer.train()
 

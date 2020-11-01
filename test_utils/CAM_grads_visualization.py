@@ -47,6 +47,7 @@ class GradCAM:
             (t_convOutputs, t_predictions) = gradModel(self.templates)
             train = tf.reshape(t_predictions, (len(self.templates), -1))
             test = tf.reshape(predictions, (len(image), -1))
+            # losses = tf.reduce_mean(tf.keras.backend.pow(tf.keras.backend.abs(test - train), 1), axis=-1)
             losses = self.distance_func(train, test)
 
             loss = tf.math.reduce_min(losses)

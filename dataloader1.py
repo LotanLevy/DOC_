@@ -140,77 +140,62 @@ def convert_subdir2cls(subdir_name):
 
 
 def get_iterators_by_root_dir(root_dir, batch_size, input_size, split_val, classes_num, shuffle=False,
-                              preprocess_func=lambda x: x, cls2label=None, use_aug=False):
-    # data_gen = tf.keras.preprocessing.image.ImageDataGenerator(preprocessing_function=preprocess_func,
-    #                                                            validation_split=split_val)
+                              preprocess_func=lambda x: x, cls2label=None):
+    dirs = os.listdir(root_dir)
+    length = len(max(dirs, key=len))
 
-    data_gen = tf.keras.preprocessing.image.ImageDataGenerator(horizontal_flip=use_aug, vertical_flip=use_aug,
-                                                               preprocessing_function=preprocess_func,
-                                                                   validation_split=split_val)
-    train_iter = data_gen.flow_from_directory(root_dir, target_size=input_size,
-                                               batch_size=batch_size, class_mode='categorical', shuffle=shuffle,
-                                               subset="training")
+    for dir in dirs:  # Handle the sort problem pads the clas num with '0'
+        if len(dir) < length:
+            zeros = "0" * (length - len(dir))
+            new_name = zeros + dir
 
-    val_iter = data_gen.flow_from_directory(root_dir, target_size=input_size,
-                                               batch_size=batch_size, class_mode='categorical', shuffle=shuffle,
-                                               subset="validation")
+            os.rename(os.path.join(root_dir, dir), os.path.join(root_dir, new_name))
+            print("old {}, new {}".format(dir, new_name))
 
-    # dirs = os.listdir(root_dir)
-    # length = len(max(dirs, key=len))
-    #
-    # for dir in dirs:  # Handle the sort problem pads the clas num with '0'
-    #     if len(dir) < length:
-    #         zeros = "0" * (length - len(dir))
-    #         new_name = zeros + dir
-    #
-    #         os.rename(os.path.join(root_dir, dir), os.path.join(root_dir, new_name))
-    #         print("old {}, new {}".format(dir, new_name))
-    #
-    # if cls2label is None:
-    #     cls2label = dict()
-    #     label_idx = 0
-    #     for sub_dir in sorted(os.listdir(root_dir)):
-    #         cls2label[convert_subdir2cls(sub_dir)] = label_idx
-    #         label_idx += 1
-    #
-    # paths = []
-    # labels = []
-    # for sub_dir in sorted(os.listdir(root_dir)):
-    #     full_path = os.path.join(root_dir, sub_dir)
-    #     if not os.path.isdir(full_path):
-    #         continue
-    #     for file in os.listdir(full_path):
-    #         paths.append(os.path.join(full_path, file))
-    #         labels.append(cls2label[convert_subdir2cls(sub_dir)])
-    #
-    # print(cls2label)
-    #
-    # assert len(paths) == len(labels)
-    # if len(cls2label) != classes_num:
-    #     print("classes in directory doesn't match classes_num")
-    #
-    # if split_val > 0:
-    #     X_train, X_test, y_train, y_test = train_test_split(paths, labels, test_size=split_val, shuffle=shuffle)
-    # else:
-    #     X_train, X_test, y_train, y_test = paths, [], labels, []
-    #
-    # train_iter = DirIter(X_train, y_train, batch_size, input_size, classes_num, shuffle=True,
-    #                      preprocess_func=preprocess_func)
-    # val_iter = DirIter(X_test, y_test, batch_size, input_size, classes_num, shuffle=True,
-    #                    preprocess_func=preprocess_func)
-    #
-    # train_iter.set_cls2label_map(cls2label)
-    # val_iter.set_cls2label_map(cls2label)
+    if cls2label is None:
+        cls2label = dict()
+        label_idx = 0
+        for sub_dir in sorted(os.listdir(root_dir)):
+            cls2label[convert_subdir2cls(sub_dir)] = label_idx
+            label_idx += 1
+
+    paths = []
+    labels = []
+    for sub_dir in sorted(os.listdir(root_dir)):
+        full_path = os.path.join(root_dir, sub_dir)
+        if not os.path.isdir(full_path):
+            continue
+        for file in os.listdir(full_path):
+            paths.append(os.path.join(full_path, file))
+            labels.append(cls2label[convert_subdir2cls(sub_dir)])
+
+    print(cls2label)
+
+    assert len(paths) == len(labels)
+    if len(cls2label) != classes_num:
+        print("classes in directory doesn't match classes_num")
+
+    if split_val > 0:
+        X_train, X_test, y_train, y_test = train_test_split(paths, labels, test_size=split_val, shuffle=shuffle)
+    else:
+        X_train, X_test, y_train, y_test = paths, [], labels, []
+
+    train_iter = DirIter(X_train, y_train, batch_size, input_size, classes_num, shuffle=True,
+                         preprocess_func=preprocess_func)
+    val_iter = DirIter(X_test, y_test, batch_size, input_size, classes_num, shuffle=True,
+                       preprocess_func=preprocess_func)
+
+    train_iter.set_cls2label_map(cls2label)
+    val_iter.set_cls2label_map(cls2label)
     return train_iter, val_iter
 
 
 def get_doc_loaders(ref_path, tar_path, alien_path, batchsize, input_size, split_val, cls_num, shuffle=False,
-                    preprocess_func=lambda x: x, alien_cls2label=None, use_aug=False):
+                    preprocess_func=lambda x: x, alien_cls2label=None):
     ref_loader, i1 = get_iterators_by_root_dir(ref_path, batchsize, input_size, 0, cls_num, shuffle=shuffle,
                                                preprocess_func=preprocess_func)
     train_s_loader, test_s_loader = get_iterators_by_root_dir(tar_path, batchsize, input_size, split_val, cls_num,
-                                                              shuffle=shuffle, preprocess_func=preprocess_func,
-                                                              use_aug=use_aug)
+                                                              shuffle=shuffle, preprocess_func=preprocess_func)
     test_alien_loader, i2 = get_iterators_by_root_dir(alien_path, batchsize, input_size, 0, cls_num, shuffle=shuffle,
                                                       preprocess_func=preprocess_func, cls2label=alien_cls2label)
     print(len(ref_loader), len(i1))

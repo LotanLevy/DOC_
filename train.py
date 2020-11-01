@@ -74,7 +74,7 @@ def train(target_dataloader, reference_dataloader, epoch_num, first_trained_laye
     # Learning
     for epochnumber in range(epoch_num):
         lc, ld, accuracy = [], [], []  # epoch loaders
-        total = int(len(target_dataloader) / batchsize)
+        total = int(len(target_dataloader))
         with tqdm(total=total, position=0, leave=True) as pbar:
             for i in tqdm(range(total), position=0, leave=True):
                 pbar.update()
