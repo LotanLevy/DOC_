@@ -98,11 +98,25 @@ class Trainer:
             self.loss_helper.build_regularization(model_t, self.tar_train_loader)
         print("Network and dataloaders were created")
 
+    def write_data_of_loader(self, dataloader, output_path, loader_name):
+        with open(os.path.join(output_path, loader_name + "_paths.txt"), 'w') as f:
+            for p in dataloader.filepaths:
+                f.write(p + "\n")
+        with open(os.path.join(output_path, loader_name + "_labels.txt"), 'w') as f:
+            for l in dataloader.labels:
+                f.write(str(l) + "\n")
+
     def write_train_data(self):
-        self.ref_loader.write_data(self.args.output_path, self.args.ref_filename)
-        self.tar_train_loader.write_data(self.args.output_path, self.args.tar_train_filename)
-        self.tar_test_loader.write_data(self.args.output_path, self.args.tar_test_filename)
-        self.alien_test_loader.write_data(self.args.output_path, self.args.alien_filename)
+        self.write_data_of_loader(self.ref_loader, self.args.output_path, self.args.ref_filename)
+        self.write_data_of_loader(self.tar_train_loader, self.args.output_path, self.args.tar_train_filename)
+        self.write_data_of_loader(self.tar_test_loader, self.args.output_path, self.args.tar_test_filename)
+        self.write_data_of_loader(self.alien_test_loader, self.args.output_path, self.args.alien_filename)
+
+
+        # self.ref_loader.write_data(self.args.output_path, self.args.ref_filename)
+        # self.tar_train_loader.write_data(self.args.output_path, self.args.tar_train_filename)
+        # self.tar_test_loader.write_data(self.args.output_path, self.args.tar_test_filename)
+        # self.alien_test_loader.write_data(self.args.output_path, self.args.alien_filename)
         print("Data files created")
 
 

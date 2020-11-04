@@ -50,6 +50,6 @@ if __name__ == "__main__":
     trainer = experiment_utils.Trainer(get_train_parser().parse_args())
     trainer.create_experiment_dir()
     trainer.set_ready()
-    # trainer.write_train_data()
+    trainer.write_train_data()
     trainer.train()
 
