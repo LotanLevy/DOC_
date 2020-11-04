@@ -89,7 +89,7 @@ class Trainer:
                                                              (self.args.input_size, self.args.input_size),
                                                              self.args.split_val, self.args.cls_num, shuffle=True,
                                                              preprocess_func=self.preprocessing_func,
-                                                                       alien_cls2label=alien_cls2label)
+                                                                       alien_cls2label=alien_cls2label, use_aug=self.args.use_aug==1)
         # self.compactness_loss = get_compactness_loss(self.args.c_loss_type, self.args.lambda_,self.args.batchsize)
         self.loss_helper = LossHelper(self.args.c_loss_type, self.args.lambda_, self.args.reg_coeff)
         if self.args.use_var_reg:

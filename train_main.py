@@ -13,7 +13,7 @@ def get_train_parser():
     parser.add_argument('--tar_dir', type=str, required=True)
     parser.add_argument('--alien_dir', type=str, required=True)
     parser.add_argument('--alien_cls2label', type=str, default=None)
-    parser.add_argument('--use_aug', action="store_true")
+    parser.add_argument('--use_aug', type=int, default=0, choices=[0,1])
 
 
 
