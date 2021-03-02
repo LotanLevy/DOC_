@@ -94,17 +94,18 @@ def train(target_dataloader, reference_dataloader, epoch_num, first_trained_laye
                 # Get loss while learning
                 lc.append(model_t.train_on_batch(batch_target, np.zeros((batchsize, 4096))))
 
-                if not not_use_d_lose:
-                    batch_ref, batch_y = reference_dataloader.next()
-
-                    # reference data
-                    # Get loss while learning
-                    ref_output = model_r.train_on_batch(batch_ref, batch_y)
-                    ld.append(ref_output[0])
-                    accuracy.append(ref_output[1])
+                # if not not_use_d_lose:
+                #     batch_ref, batch_y = reference_dataloader.next()
+                #
+                #     # reference data
+                #     # Get loss while learning
+                #     ref_output = model_r.train_on_batch(batch_ref, batch_y)
+                #     ld.append(ref_output[0])
+                #     accuracy.append(ref_output[1])
 
         target_dataloader.on_epoch_end()
         reference_dataloader.on_epoch_end()
+        print(ld, lc, accuracy)
 
         outputs["Descriptive_loss"].append(np.mean(ld))
         outputs["Compact_loss"].append(np.mean(lc))

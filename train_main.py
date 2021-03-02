@@ -2,6 +2,10 @@
 
 import argparse
 import datetime
+import os
+from test_utils.ROC_graph import get_roc_curve
+import numpy as np
+
 
 # from utils.experiment_utils import Trainer
 from utils import experiment_utils
@@ -47,9 +51,23 @@ def get_train_parser():
 
 
 if __name__ == "__main__":
-    trainer = experiment_utils.Trainer(get_train_parser().parse_args())
+    auc = []
+    eer = []
+    tp, fp, tn,fn = [],[],[],[]
+    args = get_train_parser().parse_args()
+    output_path = os.path.join(args.output_path, args.name)
+
+
+    trainer = experiment_utils.Trainer(args)
     trainer.create_experiment_dir()
     trainer.set_ready()
     trainer.write_train_data()
     trainer.train()
+    experiment = experiment_utils.Experiment(trainer.args.output_path, trainer.args.epochs, target_num=None, alien_num=None)
+    eer_, auc_, tn_, fp_, fn_, tp_ = get_roc_curve(experiment.get_data_scores, "roc_results", experiment.model,
+                  experiment.templates, experiment.aliens_positive, experiment.aliens_negative,
+                  trainer.args.output_path)
+
+    print(eer_, auc_, tn_, fp_, fn_, tp_)
+
 

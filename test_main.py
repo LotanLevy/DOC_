@@ -42,7 +42,7 @@ def run_test(args):
     get_epoch_dir = lambda model_name, epoch: os.path.join(os.path.join(output_path, model_name), "epoch_{}".format(epoch))
 
     for model_path in args.models_dirs:
-        new_experiment = Experiment(model_path, args.epochs_weights_num)
+        new_experiment = Experiment(model_path, args.epochs_weights_num, target_num=None, alien_num=None)
         experiments[new_experiment.experiment_name] = new_experiment
         # Creates models output dir
         model_and_epoch_path = get_epoch_dir(new_experiment.experiment_name, args.epochs_weights_num)

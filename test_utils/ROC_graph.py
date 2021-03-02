@@ -5,6 +5,10 @@ import tensorflow as tf
 import os
 from tensorflow.keras.losses import Loss
 import re
+from scipy.optimize import brentq
+from scipy.interpolate import interp1d
+from sklearn.metrics import confusion_matrix
+
 
 class MeanPError(Loss):
 
@@ -63,18 +67,35 @@ def get_roc_curve(get_data_scores_func, title, model, templates, negative_data, 
     y_true[len(negative_data):] = 1  # 0:Normal, 1：Abnormal
 
     # Calculate FPR, TPR(, Threshould)
-    fpr, tpr, _ = metrics.roc_curve(y_true, np.hstack((Z1, Z2)))
+    fpr, tpr, thresholds = metrics.roc_curve(y_true, np.hstack((Z1, Z2)))
 
     # AUC
     auc = metrics.auc(fpr, tpr)
+    eer= brentq(lambda x: 1. - x - interp1d(fpr, tpr)(x), 0., 1.)
+    thresh = interp1d(fpr, thresholds)(eer)
+    z1_cls = (Z1 >= thresh).astype(int)
+    z2_cls = (Z2 >= thresh).astype(int)
+
+    tn, fp, fn, tp = confusion_matrix(y_true, np.hstack((z1_cls, z2_cls))).ravel()
+
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    f_score = 2 * (precision * recall) / (precision + recall)
+
 
     # Plot the ROC curve
-    plt.figure()
+    # Plot the ROC curve
+    fig = plt.figure()
     plt.plot(fpr, tpr, label='DeepOneClassification(AUC = %.2f)' % auc)
+    plt.scatter([eer], [1-eer], label="eer={}".format(eer))
     plt.legend()
     plt.title(title + 'ROC curve')
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.grid(True)
-    plt.savefig(os.path.join(roc_path, title + "roc_graph.png"))
+    plt.savefig(os.path.join(output_path, "roc_graph_eer_{:.2f}_auc_{:.2f}_fscore_{:.2f}.png".format(eer, auc, f_score)))
     plt.show()
+    plt.close(fig)
+    plt.clf()
+    plt.cla()
+    return eer, auc, tn, fp, fn, tp
