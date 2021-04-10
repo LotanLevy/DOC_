@@ -59,12 +59,16 @@ class DirIter:
             return None, None
 
     def load_img(self, image_path):
-        image = Image.open(image_path, 'r')
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-        image = image.resize(self.input_size, Image.NEAREST)
-        image = np.array(image).astype(np.float32)
-        return np.expand_dims(image, axis=0)
+        try:
+            image = Image.open(image_path, 'r')
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+            image = image.resize(self.input_size, Image.NEAREST)
+            image = np.array(image).astype(np.float32)
+            return np.expand_dims(image, axis=0)
+        except Exception as e:
+            print(image_path)
+            raise e
 
     def next(self):
         relevant_indices = self.indices[self.cur_idx: self.cur_idx + self.batch_size]
