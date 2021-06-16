@@ -37,6 +37,22 @@ def get_compactness_loss(type, lambda_, n_dim):
 def train(target_dataloader, reference_dataloader, epoch_num, first_trained_layer_name, compactness_loss, output_dir,
           network_constractor, batchsize, target_layer_name, not_use_d_lose=False):
     # output dirs !
+
+    time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    epochs_log_dir = os.path.join(os.path.join(output_dir, "epochs_logs/" + time))
+    ckpt_path = os.path.join(output_dir, "ckpts/")
+    if not os.path.exists(ckpt_path):
+        os.makedirs(ckpt_path)
+
+    print("Model build...")
+
+    for i in range(3):
+        count = 0
+        print("__________________________" + str(i))
+        for X, y in iter(target_dataloader):
+            if count < 10:
+                print(y)
+                count += 1
     time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     epochs_log_dir = os.path.join(os.path.join(output_dir, "epochs_logs/" + time))
     ckpt_path = os.path.join(output_dir, "ckpts/")
